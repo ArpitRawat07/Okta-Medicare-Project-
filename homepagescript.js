@@ -1,3 +1,5 @@
+// const { get } = require("http");
+
 const url = "https://dev-93076686-admin.okta.com/api/v1/users";
 const token = "00CwZ9HwAqbM2r2stUe9pOStTJBuWM3q_jOxeYVroA";
 let userid;
@@ -24,11 +26,11 @@ if (document.cookie) {  // Check if cookies exist
 }
 
 const getUser = async () => {
-
+    console.log("Fetching user data...");
     const res = await fetch("http://localhost:5000/getUser", {
         method: "POST",
         headers: {
-            // "Authorization": SSWS ${token},
+            // "Authorization": `SSWS ${token}`,
             "Content-Type": "application/json"
         },
         body: JSON.stringify({ userid }),
@@ -42,6 +44,25 @@ const getUser = async () => {
     state.innerText = data.profile.state;
     country.innerText = data.profile.countryCode;
     document.getElementById("fullName").innerText = data.profile.firstName + " " + data.profile.lastName;
+    document.getElementById('subscription').innerText = data.profile.subscribe;
 }
 
 getUser()
+const getFactors = async () => {
+    const res = await fetch("http://localhost:5000/verify", {
+        method: "POST",
+        headers: {
+            // "Authorization": `SSWS ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ userid }),
+    })
+    const data = await res.json();
+    document.getElementById("factors").innerText = "";
+    for (let item of
+        data) {
+        document.getElementById("factors").innerText += " " + item.provider;
+    }
+    console.log(data);
+}
+getFactors();
