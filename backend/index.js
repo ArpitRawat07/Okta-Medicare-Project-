@@ -40,12 +40,12 @@ app.get("/authorization-code/callback", async (req, res) => {
                 client_secret: CLIENT_SECRET,
                 redirect_uri: REDIRECT_URI,
                 code: code
-            }, 
+            },
             {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded"
-            }
-        });
+                }
+            });
 
         const accessToken = tokenResponse.data.access_token;
         // console.log(tokenResponse.data);
@@ -117,7 +117,7 @@ app.post("/getUser", async (req, res) => {
 
 app.post('/update-profile', async (req, res) => {
     const { userData, userid } = req.body;
-    const { firstName, lastName, username, email, mobile, city, state, country } = userData;
+    const { firstName, lastName, username, email, mobile, city, state, country, subscribe } = userData;
     // console.log(userid);
     try {
         // Fetch user from Okta by email
@@ -152,6 +152,7 @@ app.post('/update-profile', async (req, res) => {
                     city: city,
                     state: state,
                     countryCode: country,
+                    subscribe: subscribe
                 }
             })
         });
@@ -163,6 +164,26 @@ app.post('/update-profile', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+// https://dev-93076686.okta.com/api/v1/users/00unwwbvnqJSJli1S5d7/factors/catalog
+app.post("/verify", async (req, res) => {
+    const { userid } = req.body;
+    try {
+        const response = await fetch(`${OKTA_DOMAIN}/api/v1/users/${userid}/factors/catalog`, {
+            method: "GET",
+            headers: {
+                "Authorization": `SSWS ${API_TOKEN}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        });
+
+        const data = await response.json();//convert response to json
+        res.status(response.status).json(data);//to frontend
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
